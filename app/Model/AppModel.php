@@ -30,4 +30,32 @@ App::uses('Model', 'Model');
  * @package       app.Model
  */
 class AppModel extends Model {
+    
+    /**
+     * Override default find behaviour to not retrieve soft-deleted records.
+     */
+    public function find($type = 'first', $query = array()) {
+        $query['conditions']['archived'] = false;
+        parent::find($type, $query);
+    }
+    
+    public function findWithArchived($type = 'first', $query = array()){
+        parent::find($type, $query);
+    }
+    
+    public function formatDateForDatabase($dateString) {
+        $ret = '';
+        if (!empty($dateString)) {
+            $ret = date('Y-m-d', strtotime($dateString));
+        }
+        return $ret;
+    }
+
+    public function formatDateForDisplay($dateString) {
+        $ret = '';
+        if (!empty($dateString)) {
+            $ret = date('d/m/Y', strtotime($dateString));
+        }
+        return $ret;
+    }
 }
