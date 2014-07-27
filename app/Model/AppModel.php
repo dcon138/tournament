@@ -36,11 +36,11 @@ class AppModel extends Model {
      */
     public function find($type = 'first', $query = array()) {
         $query['conditions']['archived'] = false;
-        parent::find($type, $query);
+        return parent::find($type, $query);
     }
     
     public function findWithArchived($type = 'first', $query = array()){
-        parent::find($type, $query);
+        return parent::find($type, $query);
     }
     
     public function formatDateForDatabase($dateString) {
