@@ -35,7 +35,9 @@ class AppModel extends Model {
      * Override default find behaviour to not retrieve soft-deleted records.
      */
     public function find($type = 'first', $query = array()) {
-        $query['conditions']['archived'] = false;
+        if ($this->hasField('archived')) {
+            $query['conditions'][$this->name . '.archived'] = false;
+        }
         return parent::find($type, $query);
     }
     

@@ -56,5 +56,10 @@ class ScoringSystem extends AppModel {
         }
         return false;
     }
+    
+    public function determineWinners($scores) {
+        $this->WinningCondition->read(null, $this->data['ScoringSystem']['winningConditionId']);
+        return $this->WinningCondition->determineWinners($scores, $this->data['ScoringSystem']['limit']);
+    }
 }
 

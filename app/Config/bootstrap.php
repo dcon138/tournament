@@ -106,3 +106,9 @@ CakeLog::config('error', array(
 	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
 	'file' => 'error',
 ));
+
+$environment = getenv('environment');
+if (empty($environment) || !in_array($environment, array('live', 'test', 'local'))) {
+    $environment = 'local';
+}
+Configure::write('environment', $environment);

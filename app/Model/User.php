@@ -59,17 +59,6 @@ class User extends AppModel {
         ),
     );
     
-    public $hasMany = array(
-        'HomeMatch' => array(
-            'className' => 'Match',
-            'foreignKey' => 'player1',
-        ),
-        'AwayMatch' => array(
-            'className' => 'Match',
-            'foreignKey' => 'player2',
-        )
-    );
-    
     public $hasAndBelongsToMany = array(
         'Association' => array(
             'className' => 'Association',
@@ -77,7 +66,27 @@ class User extends AppModel {
             'foreignKey' => 'userId',
             'associationForeignKey' => 'associationId',
         ),
+        'Match' => array(
+            'className' => 'Match',
+            'joinTable' => 'match_players',
+            'foreignKey' => 'user_id',
+            'associationForeignKey' => 'match_id',
+        ),
     );
+    
+    /**
+     * Override default find behaviour to not retrieve users that have not
+     * validated their account.
+     */
+    public function find($type = 'first', $query = array()) {
+        $query['conditions']['validated'] = true;
+        return parent::find($type, $query);
+    }
+    
+    public function findWithArchived($type = 'first', $query = array()){
+        $query['conditions']['validated'] = true;
+        return parent::find($type, $query);
+    }
     
     public function uniqueEmail() {
         $clash = $this->find('first', array(
@@ -117,20 +126,6 @@ class User extends AppModel {
         return ($this->data['User']['password'] == $this->data['User']['confirmPassword']);
     }
     
-    public function getMatches($userId) {
-        $matches = array();
-        if (!empty($userId)) {
-            $user = $this->find('first', array(
-                'User.id' => $userId,
-            ));
-            if (!empty($user)) {
-                $matches = array_merge($user['HomeMatch'], $user['AwayMatch']);
-            }
-        }
-        return $matches;
-    }
-    
-    
     public function generateValidationCode() {
         $code = $this->generateRandomString(6);
         $user = $this->find('first', array(
@@ -142,6 +137,10 @@ class User extends AppModel {
             $code = $this->generateValidationCode();
         }
         return $code;
+    }
+    
+    public function sendValidationEmail() {
+        //TODO 
     }
     
     //SOURCE: http://stackoverflow.com/questions/4356289/php-random-string-generator

@@ -33,8 +33,14 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 		echo $this->Html->css('bootstrap.min');
 		echo $this->Html->css('bootstrap-theme.min');
                 echo $this->Html->css('cake.generic');
+                echo $this->Html->css('jquery-ui.min');
+                echo $this->Html->css('jquery-ui.structure.min');
+                echo $this->Html->css('jquery-ui.theme.min');
                 
                 echo $this->Html->script('boostrap.min');
+                echo $this->Html->script('jquery');
+                echo $this->Html->script('jquery-ui.min');
+                echo $this->Html->script('site');
 
 		echo $this->fetch('meta');
 		echo $this->fetch('css');

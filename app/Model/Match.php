@@ -9,34 +9,14 @@ class Match extends AppModel {
     public $displayField = 'datePlayed';
     
     public $validate = array(
-        'player1' => array(
-            'notempty' => array(
-                'rule' => array('notempty'),
-                'message' => 'Player 1 must be selected.',
-            ),
-        ),
-        'player2' => array(
-            'notempty' => array(
-                'rule' => array('notempty'),
-                'message' => 'Player 2 must be selected.',
-            ),
-        ),
-        'scoringSystem' => array(
+        'scoringSystemId' => array(
             'notempty' => array(
                 'rule' => array('notempty'),
                 'message' => 'Scoring System must be selected.',
             ),
-        ),
-        'player1Score' => array(
-            'notempty' => array(
-                'rule' => array('notempty'),
-                'message' => 'Player 1 score must be enterred.',
-            ),
-        ),
-        'player2Score' => array(
-            'notempty' => array(
-                'rule' => array('notempty'),
-                'message' => 'Player 2 score must be enterred.',
+            'validScoringSystem' => array(
+                'rule' => array('validScoringSystem'),
+                'message' => 'Please select a valid scoring system.',
             ),
         ),
         'affectsRating' => array(
@@ -58,17 +38,78 @@ class Match extends AppModel {
     );
     
     public $belongsTo = array(
-        'Player1' => array(
-            'className' => 'User',
-            'foreignKey' => 'player1',
-        ),
-        'Player2' => array(
-            'className' => 'User',
-            'foreignKey' => 'player2',
-        ),
         'ScoringSystem' => array(
             'className' => 'ScoringSystem',
-            'foreignKey' => 'scoringSystem',
+            'foreignKey' => 'scoringSystemId',
         ),
     );
+    
+    public $hasAndBelongsToMany = array(
+        'Participant' => array(
+            'className' => 'User',
+            'joinTable' => 'match_players',
+            'foreignKey' => 'match_id',
+            'associationForeignKey' => 'user_id',
+        ),
+    );
+    
+    public function validPlayer($check) {
+        return ($this->Player1->hasAny(array('Player1.id' => reset($check))));
+    }
+    
+    public function validScoringSystem() {
+        return $this->ScoringSystem->hasAny(array('ScoringSystem.id' => $this->data['Match']['scoringSystemId']));
+    }
+    
+    /**
+     * Calculates the winner(s) of this match, stores them in the database
+     * and returns the list of winners.
+     * @return array - the list of winners of the match (player_id => score format)
+     */
+    public function determineWinners() {
+        $this->ScoringSystem->read(null, $this->data['Match']['scoringSystemId']);
+        $winners = $this->ScoringSystem->determineWinners($this->getScores());
+        
+        $players = $this->MatchPlayer->find('all', array(
+            'MatchPlayer.match_id' => $this->id,
+        ));
+        foreach ($players as $player) {
+            $this->MatchPlayer->id = $player['MatchPlayer']['id'];
+            $winner = false;
+            if (in_array($player['MatchPlayer']['user_id'], $winners)) {
+                $winner = true;
+            }
+            $this->MatchPlayer->saveField('winner', $winner);
+        }
+        return $winners;
+    }
+    
+    public function getWinners() {
+        return $this->MatchPlayer->find('all', array(
+            'MatchPlayer.match_id' => $this->id,
+            'MatchPlayer.winner' => true,
+        ));
+    }
+    
+    public function getPlayers() {
+        return $this->MatchPlayer->find('all', array(
+            'MatchPlayer.match_id' => $this->id,
+        ));
+    }
+    
+    /**
+     * Gets all players for the current match, and their score.
+     * @return array - a list of players in the match and their scores (player_id => score format)
+     */
+    private function getScores() {
+        $players = $this->MatchPlayer->find('all', array(
+            'MatchPlayer.match_id' => $this->data['Match']['id'],
+        ));
+        
+        $scores = array();
+        foreach ($players as $player) {
+            $scores[$player['MatchPlayer']['user_id']] = $player['MatchPlayer']['score'];
+        }
+        return $scores;
+    }
 }

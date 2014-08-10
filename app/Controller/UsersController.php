@@ -6,7 +6,7 @@
 
 class UsersController extends AppController {
     public $currentPage = 'users';
-    public $uses = array('User', 'Match', 'Association', 'WinningCondition');
+    public $uses = array('User');
     public $paginate = array(
         'limit' => 25,
         'order' => array(
@@ -24,6 +24,7 @@ class UsersController extends AppController {
         if ($this->request->is('post')) {
             $this->User->create();
             $this->request->data['User']['validation_code'] = $this->User->generateValidationCode();
+            $this->User->sendValidationEmail();
             if ($this->User->save($this->request->data)) {
                 $this->Session->setFlash('User successfully created.', 'success');
                 $this->redirect(array('action' => 'index'));
