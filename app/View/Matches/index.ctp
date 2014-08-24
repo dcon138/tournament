@@ -1,3 +1,5 @@
+<?= $this->Html->script('matches') ?>
+
 <a class="btn btn-primary pull-right" href="<?= Router::url(array('action' => 'add')) ?>">Add Match</a>
 <?php if (empty($matches)): ?>
     <p>There are no matches that match your current filters.</p>
@@ -17,7 +19,7 @@
         </thead>
         <tbody>
     <?php foreach ($matches as $match): ?>
-        <tr>
+        <tr id="row-<?= $match['Match']['id'] ?>">
             <td><?= $match['Match']['datePlayed'] ?></td>
             <td>
                 <?php
@@ -32,7 +34,7 @@
                     }
                 ?>
             </td>
-            <td>
+            <td class="winners_col">
                 <?php
                     if (!empty($winners)) {
                         echo implode('<br/>', $winners);
@@ -50,7 +52,7 @@
             </td>
             <td><?= $match['ScoringSystem']['name'] ?></td>
             <!-- if its an admin -->
-                <td><!-- actions to go here --></td>
+            <td><a class="calculate_winners" id="calculate_winners_<?= $match['Match']['id'] ?>">Calculate Winners</a></td>
             <!-- endif -->
         </tr>
     <?php endforeach; ?>

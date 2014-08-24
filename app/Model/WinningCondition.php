@@ -19,7 +19,7 @@ class WinningCondition extends AppModel {
     
     /**
      * Determines which of the passed scores are the winner(s).
-     * @param type $scores - an array containing playerId => score for each player
+     * @param type $scores - an array containing playerId for each player
      * @param type $limit - the limit property of the scoring system
      */
     public function determineWinners($scores, $limit) {

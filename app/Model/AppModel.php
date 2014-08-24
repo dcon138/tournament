@@ -36,7 +36,7 @@ class AppModel extends Model {
      */
     public function find($type = 'first', $query = array()) {
         if ($this->hasField('archived')) {
-            $query['conditions'][$this->name . '.archived'] = false;
+            $query['conditions'][$this->alias . '.archived'] = false;
         }
         return parent::find($type, $query);
     }

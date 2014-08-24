@@ -35,4 +35,37 @@ class MatchesController extends AppController {
         $participants = $this->User->find('list');
         $this->set(compact('scoringSystems', 'participants'));
     }
+    
+    public function ajaxDetermineWinners() {
+        $this->autoRender = false;
+
+        $ret = array('response_status' => 'ERROR');
+
+        if ($this->request->is('post')) {
+            if (empty($this->request->data['match_id'])) {
+                $ret['reason'] = 'Invalid match specified. Please try again.';
+            } else {
+                $match_id = $this->request->data['match_id'];
+                if (!$this->Match->exists($match_id)) {
+                    $ret['reason'] = 'Invalid match specified. Please try again.';
+                } else {
+                    $this->Match->read(null, $match_id);
+                    $winners = $this->Match->determineWinners();
+                    $winningPlayers = $this->Match->Participant->find('list', array(
+                        'conditions' => array(
+                            'Participant.id' => $winners,
+                        ),
+                    ));
+                    $ret = array(
+                        'response_status' => 'OK',
+                        'data' => array(
+                            'match_id' => $match_id,
+                            'winners' => implode(' ', $winningPlayers),
+                        )
+                    );
+                }
+            }
+        }
+        return json_encode($ret);
+    }
 }

@@ -57,6 +57,11 @@ class ScoringSystem extends AppModel {
         return false;
     }
     
+    /**
+     * 
+     * @param type $scores - an array of ($playerId => $score) for each player in the match
+     * @return array - an array of $playerId for each player that won the match
+     */
     public function determineWinners($scores) {
         $this->WinningCondition->read(null, $this->data['ScoringSystem']['winningConditionId']);
         return $this->WinningCondition->determineWinners($scores, $this->data['ScoringSystem']['limit']);

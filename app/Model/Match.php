@@ -64,14 +64,16 @@ class Match extends AppModel {
     /**
      * Calculates the winner(s) of this match, stores them in the database
      * and returns the list of winners.
-     * @return array - the list of winners of the match (player_id => score format)
+     * @return array - the list of $playerId of the winners of the match
      */
     public function determineWinners() {
         $this->ScoringSystem->read(null, $this->data['Match']['scoringSystemId']);
         $winners = $this->ScoringSystem->determineWinners($this->getScores());
         
         $players = $this->MatchPlayer->find('all', array(
-            'MatchPlayer.match_id' => $this->id,
+            'conditions' => array(
+                'MatchPlayer.match_id' => $this->id,
+            ),
         ));
         foreach ($players as $player) {
             $this->MatchPlayer->id = $player['MatchPlayer']['id'];
@@ -111,5 +113,24 @@ class Match extends AppModel {
             $scores[$player['MatchPlayer']['user_id']] = $player['MatchPlayer']['score'];
         }
         return $scores;
+    }
+    
+    public function beforeSave($options = array()) {
+        if (!empty($this->data['Match']['datePlayed'])) {
+            //swap the date and month around to keep the date functions happy, they want mm/dd/yyyy format
+            $words = explode('/', $this->data['Match']['datePlayed']);
+            $this->data['Match']['datePlayed'] = $words[1] . '/' . $words[0] . '/' . $words[2];
+            $this->data['Match']['datePlayed'] = $this->formatDateForDatabase($this->data['Match']['datePlayed']);
+        }
+        return true;
+    }
+    
+    public function afterFind($results, $primary = false) {
+        foreach ($results as $key => $val) {
+            if (!empty($results[$key]['Match']['datePlayed'])) {
+                $results[$key]['Match']['datePlayed'] = $this->formatDateForDisplay($results[$key]['Match']['datePlayed']);
+            }
+        }
+        return $results;
     }
 }
